@@ -1,6 +1,6 @@
-commit b5f7d5095e0788a069e2468abbbbeff224d66f3d
+commit 90a8ff25dccab6505a5e8b93e876bf26e50411e5
 Author: shivaadlink <shivashankar.thiruchitrambalam@adlinktech.com>
-Date:   Wed Mar 6 18:02:29 2024 +0530
+Date:   Thu Mar 7 14:23:00 2024 +0530
 
     0001-SP2-IMX8MP-Kernel_Config_Device_Tree
 
@@ -1102,10 +1102,10 @@ index 000000000000..0f3a2bb689b1
 +#include "imx8mp-android.dtsi"
 diff --git a/arch/arm64/configs/sp2imx8mp_gki.fragment b/arch/arm64/configs/sp2imx8mp_gki.fragment
 new file mode 100644
-index 000000000000..9d90583c7723
+index 000000000000..3338cf4c4ec5
 --- /dev/null
 +++ b/arch/arm64/configs/sp2imx8mp_gki.fragment
-@@ -0,0 +1,148 @@
+@@ -0,0 +1,147 @@
 +CONFIG_ARCH_MXC=y
 +CONFIG_SOC_IMX8M=m
 +CONFIG_SOC_IMX_MU=m
@@ -1250,7 +1250,6 @@ index 000000000000..9d90583c7723
 +CONFIG_PCS_XPCS=y
 +CONFIG_REALTEK_PHY=m
 +
-+CONFIG_EXPERT=y
 +CONFIG_SYSFS=y
 +CONFIG_GPIOLIB=y
 +CONFIG_GPIO_SYSFS=y

@@ -3,7 +3,7 @@ ADLINK SP2-IMX8MP  with Android 13
 
 Platform        : SP2-IMX8MP 
 ================================================
-Kernel version  : 5.17.72
+Kernel version  : 5.15.74
 ================================================
 
 Change log:
@@ -83,19 +83,19 @@ Readme Contents
 
       
 
-1. Hardware setup
-=================================================
- Target		-  SP2-IMX8MP
- Host Machine 	- Linux Ubuntu
+1.Hardware setup
+================================================
+       Target		-  SP2-IMX8MP
+       Host Machine - Linux Ubuntu
 
-2. Package structure
-=================================================
+2.Package structure
+================================================
 
 Unzip SP2-IMX8MP-4G-Android-tiramisu_1V1.0.1_24_03_04.zip
 
 SP2-IMX8MP-4G-Android-tiramisu_1V1.0.1_24_03_04/
 
-3. Steps to boot with prebuilts
+3.Steps to boot with prebuilts
 =================================================
 
 ------------------------------------------------------
@@ -114,7 +114,7 @@ Note: - First boot from SD card can be slow. Subsequent boots will be faster
 
 ​          - Boot setting 1100 for booting from SD card 
 
-4. Peripheral testing
+4.Peripheral testing
 =================================================
 
 -------------------------------------------------
@@ -178,45 +178,43 @@ RS485 communication.
    | Pin2      | A+                     |
    | Pin5      | GND                    |
 
-1. Configure the Baudrate for uart3 ports at SP2_imx8mp side and Host side 
+1) Configure the Baudrate for uart3 ports at SP2_imx8mp side and Host side 
 
-   ```shell
-   - On target : stty -F /dev/ttymxc2 115200
-   
-   - On Host machine : minicom -D /dev/ttyUSB1 -b 115200
-   ```
+```shell
+- On target : stty -F /dev/ttymxc2 115200
+
+- On Host machine : minicom -D /dev/ttyUSB1 -b 115200
+```
+
+2) Send and Receive data between Host and Target
+
+```shell
+echo " from_target_check_rs485 123!@#" > /dev/ttymxc2
+```
+
+check on host side you would have received data
+
+use below command to start read data from host machine
+
+```shell
+cat /dev/ttymxc2
+```
+
+send data from host using minicom  "from_host_checkrs485 1%$##"
+
+check on Target side you would have received data
 
 
-2. Send and Receive data between Host and Target
 
-   ```shell
-   echo " from_target_check_rs485 123!@#" > /dev/ttymxc2
-   ```
-
-   - check on host side you would have received data
-
-   - use below command to start read data from host machine
-
-     ```shell
-     cat /dev/ttymxc2
-     ```
-
-   - send data from host using minicom  "from_host_checkrs485 1%$##"
-
-   
-      - check on Target side you would have received data
-   
-        
 -------------------------------------------------
 4.6 UART4
 -------------------------------------------------
 
 RS232 communication.
 
--  Connect  the COM port cable on CN10 connector.
+- Connect  the COM port cable on CN10 connector
 
-- Connection: DB9-COM to RS232 to USB converter:
-
+- Connection: DB9-COM to RS232 to USB converter
 
 | DB9-COM | RS232 to USB |
 | ------- | ------------ |
@@ -224,9 +222,9 @@ RS232 communication.
 | Pin3    | Pin2         |
 | PIN3    | PIN3         |
 
-- Connect the other end of Rs232 to USB to host machine.
+Connect the other end of Rs232 to USB to host machine.
 
-- Configure the Baud rate for uart4 ports at SP2_imx8mp side and Host side
+1) Configure the Baud rate for uart4 ports at SP2_imx8mp side and Host side
 
 ```shell
 - On target : stty -F /dev/ttymxc3 115200
@@ -234,25 +232,21 @@ RS232 communication.
 - On Host machine : #minicom -D /dev/ttyUSB1 -b 115200
 ```
 
+2) Send and Receive data between Host and Target
 
-​    
+```shell
+echo " from_target_check_123#." > /dev/ttymxc3
+```
 
-2. Send and Receive data between Host and Target
+check on host side you would have received data
 
-   ```shell
-   echo " from_target_check_123#." > /dev/ttymxc3
-   ```
-   
+use below command to start read data from host machine
 
-   - check on host side you would have received data
+```shell
+cat /dev/ttymxc3
+```
 
-   - use below command to start read data from host machine
-   
-     ```shell
-     cat /dev/ttymxc3
-     ```
+send data from host using minicom  "from_host_checkrs232 1%$##"
 
-   - send data from host using minicom  "from_host_checkrs232 1%$##"
-   
-   - check on Target side you would have received data
+check on Target side you would have received data
 
