@@ -1,0 +1,40 @@
+commit 52ac31a1a6f961b882563acf3b2632dfd7603946
+Author: shivaadlink <shivashankar.thiruchitrambalam@adlinktech.com>
+Date:   Wed Feb 21 16:50:02 2024 +0530
+
+    0001-SP2-IMX8MP-Android_Devices
+
+diff --git a/common/tools/imx-make.sh b/common/tools/imx-make.sh
+index 535c5b8f..e17fff7e 100755
+--- a/common/tools/imx-make.sh
++++ b/common/tools/imx-make.sh
+@@ -1,5 +1,7 @@
+ #!/bin/bash
+ 
++export AARCH64_GCC_CROSS_COMPILE=/opt/arm-gnu-toolchain-13.2.Rel1-x86_64-aarch64-none-linux-gnu/bin/aarch64-none-linux-gnu-
++export CLANG_PATH=/opt/prebuilt-android-clang
+ # help function, it display the usage of this script.
+ help() {
+ cat << EOF
+diff --git a/imx8m/AndroidProducts.mk b/imx8m/AndroidProducts.mk
+index 8a386e65..e5203457 100644
+--- a/imx8m/AndroidProducts.mk
++++ b/imx8m/AndroidProducts.mk
+@@ -30,7 +30,8 @@ PRODUCT_MAKEFILES := \
+   $(LOCAL_DIR)/evk_8mq/evk_8mq.mk \
+   $(LOCAL_DIR)/evk_8mm/evk_8mm.mk \
+   $(LOCAL_DIR)/evk_8mn/evk_8mn.mk \
+-  $(LOCAL_DIR)/evk_8mp/evk_8mp.mk
++  $(LOCAL_DIR)/evk_8mp/evk_8mp.mk \
++  $(LOCAL_DIR)/sp2_imx8mp/sp2_imx8mp.mk
+ 
+ COMMON_LUNCH_CHOICES := \
+   evk_8mq-user \
+@@ -40,4 +41,6 @@ COMMON_LUNCH_CHOICES := \
+   evk_8mn-user \
+   evk_8mn-userdebug \
+   evk_8mp-user \
+-  evk_8mp-userdebug
++  evk_8mp-userdebug \
++  sp2_imx8mp-user \
++  sp2_imx8mp-userdebug
