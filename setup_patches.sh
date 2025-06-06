@@ -95,7 +95,7 @@ apply_patch_file () {
 		# apply patch
 		if [ -d $TARGET_DIR ]; then
 			echo "[PATCH] Apply $pf to $TARGET_DIR..."
-			patch -p1 -t -d $TARGET_DIR < $pf
+			git apply -v -3 --ignore-whitespace $pf
 		else
 			echo "No sub-directory: $TARGET_DIR found, cannot patch $pf"
 		fi
