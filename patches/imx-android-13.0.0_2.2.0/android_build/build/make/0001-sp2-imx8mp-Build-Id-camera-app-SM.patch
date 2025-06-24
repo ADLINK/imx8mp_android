@@ -1,0 +1,37 @@
+From e4d35b2a8f80370a4577f3d42c4ff70369ad6480 Mon Sep 17 00:00:00 2001
+From: shiva-adlink <shivashankar.t@adlinktech.com>
+Date: Tue, 24 Jun 2025 11:31:36 +0530
+Subject: [PATCH] sp2-imx8mp: Build-Id--camera-app-SM
+
+Signed-off-by: shiva-adlink <shivashankar.t@adlinktech.com>
+---
+ core/build_id.mk                  | 2 +-
+ target/product/handheld_system.mk | 2 --
+ 2 files changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/core/build_id.mk b/core/build_id.mk
+index bbe084138a..e17d99b174 100644
+--- a/core/build_id.mk
++++ b/core/build_id.mk
+@@ -18,4 +18,4 @@
+ # (like "CRB01").  It must be a single word, and is
+ # capitalized by convention.
+ 
+-BUILD_ID=TQ3A.230805.001.A2
++BUILD_ID=1.3.13-SM
+diff --git a/target/product/handheld_system.mk b/target/product/handheld_system.mk
+index 41233b2c0a..cd3e037a22 100644
+--- a/target/product/handheld_system.mk
++++ b/target/product/handheld_system.mk
+@@ -38,8 +38,6 @@ PRODUCT_PACKAGES += \
+     BookmarkProvider \
+     BuiltInPrintService \
+     CalendarProvider \
+-    cameraserver \
+-    CameraExtensionsProxy \
+     CaptivePortalLogin \
+     CertInstaller \
+     DocumentsUI \
+-- 
+2.34.1
+

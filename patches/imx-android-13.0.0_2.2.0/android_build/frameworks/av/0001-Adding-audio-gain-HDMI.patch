@@ -1,0 +1,31 @@
+From 0176bd4697b01c52a9fb3318d41aa7d3a3a87dc0 Mon Sep 17 00:00:00 2001
+From: shivaadlink <shivashankar.t@adlinktech.com>
+Date: Tue, 27 Aug 2024 19:48:33 +0530
+Subject: [PATCH] Adding-audio-gain-HDMI
+
+Signed-off-by: shivaadlink <shivashankar.t@adlinktech.com>
+---
+ services/audiopolicy/config/default_volume_tables.xml | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/services/audiopolicy/config/default_volume_tables.xml b/services/audiopolicy/config/default_volume_tables.xml
+index 207be41aad..7c36b94984 100644
+--- a/services/audiopolicy/config/default_volume_tables.xml
++++ b/services/audiopolicy/config/default_volume_tables.xml
+@@ -34,9 +34,10 @@
+     </reference>
+     <reference name="DEFAULT_MEDIA_VOLUME_CURVE">
+     <!-- Default Media reference Volume Curve -->
+-        <point>1,-5800</point>
+-        <point>20,-4000</point>
+-        <point>60,-1700</point>
++        <point>1,-2400</point>
++        <point>10,-1900</point>
++        <point>20,-1300</point>
++        <point>60,-1200</point>
+         <point>100,0</point>
+     </reference>
+     <reference name="DEFAULT_DEVICE_CATEGORY_HEADSET_VOLUME_CURVE">
+-- 
+2.34.1
+

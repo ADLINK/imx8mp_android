@@ -1,0 +1,92 @@
+From 8cd712f57a489d40e46c4c7295f96556953d27ec Mon Sep 17 00:00:00 2001
+From: shiva-adlink <shivashankar.t@adlinktech.com>
+Date: Wed, 18 Jun 2025 17:18:26 +0530
+Subject: [PATCH] sp2-imx8mp:Remove-battery-icon
+
+Signed-off-by: shiva-adlink <shivashankar.t@adlinktech.com>
+---
+ packages/SystemUI/res/values/dimens.xml                    | 4 ++--
+ .../src/com/android/systemui/battery/BatteryMeterView.java | 7 +++++++
+ 2 files changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/packages/SystemUI/res/values/dimens.xml b/packages/SystemUI/res/values/dimens.xml
+index adc4c555dfac..e607ba00b02c 100644
+--- a/packages/SystemUI/res/values/dimens.xml
++++ b/packages/SystemUI/res/values/dimens.xml
+@@ -129,11 +129,11 @@
+     <dimen name="status_bar_horizontal_padding">2.5dp</dimen>
+ 
+     <!-- Height of the battery icon in the status bar. -->
+-    <dimen name="status_bar_battery_icon_height">13.0dp</dimen>
++    <dimen name="status_bar_battery_icon_height">0dp</dimen>
+ 
+     <!-- Width of the battery icon in the status bar. The battery drawable assumes a 12x20 canvas,
+     so the width of the icon should be 13.0dp * (12.0 / 20.0) -->
+-    <dimen name="status_bar_battery_icon_width">7.8dp</dimen>
++    <dimen name="status_bar_battery_icon_width">0dp</dimen>
+ 
+     <!-- The battery icon is 13dp tall, but the other system icons are 15dp tall (see
+          @*android:dimen/status_bar_system_icon_size) with some top and bottom padding embedded in
+diff --git a/packages/SystemUI/src/com/android/systemui/battery/BatteryMeterView.java b/packages/SystemUI/src/com/android/systemui/battery/BatteryMeterView.java
+index 0002ae95f476..b925b18bbf56 100644
+--- a/packages/SystemUI/src/com/android/systemui/battery/BatteryMeterView.java
++++ b/packages/SystemUI/src/com/android/systemui/battery/BatteryMeterView.java
+@@ -233,6 +233,7 @@ public class BatteryMeterView extends LinearLayout implements DarkReceiver {
+      * Updates percent view by removing old one and reinflating if necessary
+      */
+     public void updatePercentView() {
++        mBatteryPercentView = null;
+         if (mBatteryPercentView != null) {
+             removeView(mBatteryPercentView);
+             mBatteryPercentView = null;
+@@ -262,6 +263,7 @@ public class BatteryMeterView extends LinearLayout implements DarkReceiver {
+             return;
+         }
+ 
++        mBatteryPercentView = null;
+         if (mBatteryPercentView != null) {
+             if (mShowPercentMode == MODE_ESTIMATE && !mCharging) {
+                 mBatteryEstimateFetcher.fetchBatteryTimeRemainingEstimate(
+@@ -286,6 +288,7 @@ public class BatteryMeterView extends LinearLayout implements DarkReceiver {
+     }
+ 
+     private void setPercentTextAtCurrentLevel() {
++	    mBatteryPercentView = null;
+         if (mBatteryPercentView != null) {
+             mEstimateText = null;
+             String percentText = NumberFormat.getPercentInstance().format(mLevel / 100f);
+@@ -328,6 +331,7 @@ public class BatteryMeterView extends LinearLayout implements DarkReceiver {
+ 
+     void updateShowPercent() {
+         final boolean showing = mBatteryPercentView != null;
++        mBatteryPercentView = null;
+         // TODO(b/140051051)
+         final boolean systemSetting = 0 != whitelistIpcs(() -> Settings.System
+                 .getIntForUser(getContext().getContentResolver(),
+@@ -338,6 +342,7 @@ public class BatteryMeterView extends LinearLayout implements DarkReceiver {
+                 || mShowPercentMode == MODE_ESTIMATE;
+         shouldShow = shouldShow && !mBatteryStateUnknown;
+ 
++        shouldShow = false;
+         if (shouldShow) {
+             if (!showing) {
+                 mBatteryPercentView = loadPercentView();
+@@ -455,6 +460,7 @@ public class BatteryMeterView extends LinearLayout implements DarkReceiver {
+     public void updateColors(int foregroundColor, int backgroundColor, int singleToneColor) {
+         mDrawable.setColors(foregroundColor, backgroundColor, singleToneColor);
+         mTextColor = singleToneColor;
++        mBatteryPercentView = null;
+         if (mBatteryPercentView != null) {
+             mBatteryPercentView.setTextColor(singleToneColor);
+         }
+@@ -466,6 +472,7 @@ public class BatteryMeterView extends LinearLayout implements DarkReceiver {
+ 
+     public void dump(PrintWriter pw, String[] args) {
+         String powerSave = mDrawable == null ? null : mDrawable.getPowerSaveEnabled() + "";
++        mBatteryPercentView = null;
+         CharSequence percent = mBatteryPercentView == null ? null : mBatteryPercentView.getText();
+         pw.println("  BatteryMeterView:");
+         pw.println("    mDrawable.getPowerSave: " + powerSave);
+-- 
+2.34.1
+

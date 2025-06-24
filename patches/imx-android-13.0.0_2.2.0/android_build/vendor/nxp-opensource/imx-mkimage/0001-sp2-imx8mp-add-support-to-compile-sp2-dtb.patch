@@ -1,0 +1,29 @@
+From f62b169c65a30f46f6b2f852db0c94f5419c2ea5 Mon Sep 17 00:00:00 2001
+From: shiva-adlink <shivashankar.t@adlinktech.com>
+Date: Wed, 18 Jun 2025 16:54:36 +0530
+Subject: [PATCH] sp2-imx8mp: add support to compile sp2 dtb
+
+Signed-off-by: shiva-adlink <shivashankar.t@adlinktech.com>
+---
+ iMX8M/soc.mak | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/iMX8M/soc.mak b/iMX8M/soc.mak
+index baf687e..c31cdf2 100644
+--- a/iMX8M/soc.mak
++++ b/iMX8M/soc.mak
+@@ -151,9 +151,9 @@ u-boot-atf-tee.bin: u-boot.bin bl31.bin $(TEE)
+ clean:
+ 	@rm -f $(MKIMG) u-boot-atf.bin u-boot-atf-tee.bin u-boot-spl-ddr.bin u-boot.itb u-boot.its u-boot-ddr3l.itb u-boot-ddr3l.its u-boot-spl-ddr3l.bin u-boot-ddr4.itb u-boot-ddr4.its u-boot-spl-ddr4.bin u-boot-ddr4-evk.itb u-boot-ivt.itb u-boot-ddr4-evk.its $(OUTIMG)
+ 
+-dtb = evk.dtb
++dtb = sp2.dtb
+ $(dtb):
+-	./$(DTB_PREPROC) $(PLAT)-evk.dtb $(dtb) $(dtbs)
++	./$(DTB_PREPROC) sp2imx8mp.dtb $(dtb) $(dtbs)
+ 
+ u-boot.itb: $(dtb) $(supp_dtbs)
+ 	./$(PAD_IMAGE) $(TEE)
+-- 
+2.34.1
+
