@@ -1,0 +1,39 @@
+From bab041cf5ed4147c504062e1ed8790dce902a248 Mon Sep 17 00:00:00 2001
+From: shiva-adlink <shivashankar.t@adlinktech.com>
+Date: Fri, 20 Jun 2025 14:30:56 +0530
+Subject: [PATCH] sp2-imx8mp :oob-atf-disable-serial-console
+
+Signed-off-by: shiva-adlink <shivashankar.t@adlinktech.com>
+---
+ plat/imx/imx8m/imx8mp/imx8mp_bl31_setup.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/plat/imx/imx8m/imx8mp/imx8mp_bl31_setup.c b/plat/imx/imx8m/imx8mp/imx8mp_bl31_setup.c
+index ac39f5f79..197753636 100644
+--- a/plat/imx/imx8m/imx8mp/imx8mp_bl31_setup.c
++++ b/plat/imx/imx8m/imx8mp/imx8mp_bl31_setup.c
+@@ -209,7 +209,6 @@ static void bl31_tzc380_setup(void)
+ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
+ 		u_register_t arg2, u_register_t arg3)
+ {
+-	static console_t console;
+ 	unsigned int val;
+ 	unsigned int i;
+ 
+@@ -229,10 +228,10 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
+ 	val = mmio_read_32(IMX_IOMUX_GPR_BASE + 0x2c);
+ 	mmio_write_32(IMX_IOMUX_GPR_BASE + 0x2c, val | 0x3DFF0000);
+ 
+-	console_imx_uart_register(IMX_BOOT_UART_BASE, IMX_BOOT_UART_CLK_IN_HZ,
+-		IMX_CONSOLE_BAUDRATE, &console);
++	//console_imx_uart_register(IMX_BOOT_UART_BASE, IMX_BOOT_UART_CLK_IN_HZ,
++	//	IMX_CONSOLE_BAUDRATE, &console);
+ 	/* This console is only used for boot stage */
+-	console_set_scope(&console, CONSOLE_FLAG_BOOT);
++	//console_set_scope(&console, CONSOLE_FLAG_BOOT);
+ 
+ 	imx8m_caam_init();
+ 
+-- 
+2.34.1
+

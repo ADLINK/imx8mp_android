@@ -12,7 +12,7 @@
    5.1.   USB type A ports
    5.2.   Micro USB (Device mode)
    5.3.   HDMI
-   5.4.   UART2 - Console
+   5.4.   UART2 - Serial
    5.5.   UART3 - RS485
    5.6.   UART4 - RS232
    5.7.   GPIO on Expansion Connector
@@ -25,6 +25,7 @@
    5.14.  Audio SGT5000
    5.15.  Buzzer
    5.16.  TPM
+   5.17.  Utils:oob-reset
 ```
 ## 1 Hardware Details
 
@@ -58,7 +59,7 @@
 
 2. Check the device node of the micro SD card using dmesg command.
 
-3. Move into android release directory ```Android-13-*```
+3. Move into android release directory ```Android-1.3-*```
 
    
 
@@ -113,8 +114,8 @@
 
 * A detailed guide on using UUU tool is available in: https://www.ipi.wiki/pages/imx8mplus-docs?page=HowToFlashImageeMMCUsingUUUTool.html
 
+## 5 Peripheral testing
 
-## 5 Peripheral Testing
 ### 5.1 USB Type A
 
 * All USB type A ports are validated.
@@ -139,7 +140,7 @@
 
 HDMI function is enabled by default.
 
-### 5.4 UART2 - Console
+### 5.4 UART2 - Serial
 
 * Connect UART cable to CN9 expansion connector to get android boot logs.
 * Console UART works at TTL level. Use TTL compatible USB Serial adapter to get logs.
@@ -152,6 +153,21 @@ Pin connection:
 | 2  | UART RX |
 | 3  | GND     |
 
+**Tx Test**
+Run the below commands from adb shell to transmit data to serial .
+
+```shell
+$ stty -F /dev/ttymxc1 115200 cs8 -cstopb -parenb
+$ echo 'ADLINK' > /dev/ttymxc1
+```
+
+**Rx Test**
+
+Run below command in adb shell to start listening on serial.
+
+```shell
+$ cat /dev/ttymxc1
+```
 
 ### 5.5 UART3 - RS485
 
@@ -316,6 +332,7 @@ WiFi/BT supported in Android and functionalities can be realised by using Androi
 * Android supports both Ethernet
 * Open Settings -> Network & internet -> Internet -> Ethernet to view details of ETH0/ETH1 port
 * Ethernet configuration can be obtained by running ```ifconfig``` command from adb shell
+*  Supports Static IP from UI 
 
 
 ### 5.13 LVDS display
@@ -365,3 +382,15 @@ $ beep /dev/input/event1 2000 3
 ```shell
 $ eltt2 -gv
 ```
+
+### 5.17 oob-reset utils
+  utils oob-reset will trigger low for 1sec ; Edge IO SP2-IMX8 Edge IO, pin #28 (CN-DO2) send Low signal to OOB
+
+```shell
+# su
+# oob-reset.sh
+```
+
+default take value 1s
+
+optional syntax : oob-reset.sh  < duration seconds>

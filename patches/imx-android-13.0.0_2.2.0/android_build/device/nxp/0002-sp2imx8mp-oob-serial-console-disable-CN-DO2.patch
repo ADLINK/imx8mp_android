@@ -1,0 +1,167 @@
+From c44a9a85a8c964a46f808a63a1d9a2a8d26dec23 Mon Sep 17 00:00:00 2001
+From: shiva-adlink <shivashankar.t@adlinktech.com>
+Date: Tue, 24 Jun 2025 16:33:55 +0530
+Subject: [PATCH 2/2] sp2imx8mp :oob-serial-console-disable-CN-DO2
+
+Signed-off-by: shiva-adlink <shivashankar.t@adlinktech.com>
+---
+ imx8m/sp2_imx8mp/BoardConfig.mk         |  2 +-
+ imx8m/sp2_imx8mp/init.imx8mp.rc         | 13 +++++++++++++
+ imx8m/sp2_imx8mp/oob-reset.sh           | 21 +++++++++++----------
+ imx8m/sp2_imx8mp/sepolicy/file_contexts |  3 +++
+ imx8m/sp2_imx8mp/sepolicy/setup_sp2.te  | 20 ++++++++++++++++++++
+ imx8m/sp2_imx8mp/sp2_imx8mp.mk          |  7 +++++--
+ 6 files changed, 53 insertions(+), 13 deletions(-)
+ mode change 100755 => 100644 imx8m/sp2_imx8mp/oob-reset.sh
+ create mode 100644 imx8m/sp2_imx8mp/sepolicy/setup_sp2.te
+
+diff --git a/imx8m/sp2_imx8mp/BoardConfig.mk b/imx8m/sp2_imx8mp/BoardConfig.mk
+index 1226c82f..47abc3e1 100644
+--- a/imx8m/sp2_imx8mp/BoardConfig.mk
++++ b/imx8m/sp2_imx8mp/BoardConfig.mk
+@@ -133,7 +133,7 @@ BOARD_KERNEL_BASE := 0x40400000
+ CMASIZE=960M
+ # NXP default config
+ BOARD_KERNEL_CMDLINE := init=/init firmware_class.path=/vendor/firmware loop.max_part=7 bootconfig
+-BOARD_BOOTCONFIG += androidboot.console=ttymxc1 androidboot.hardware=nxp
++BOARD_BOOTCONFIG += androidboot.hardware=nxp
+ 
+ # memory config
+ BOARD_KERNEL_CMDLINE += transparent_hugepage=never
+diff --git a/imx8m/sp2_imx8mp/init.imx8mp.rc b/imx8m/sp2_imx8mp/init.imx8mp.rc
+index f2d33841..f2b11d13 100644
+--- a/imx8m/sp2_imx8mp/init.imx8mp.rc
++++ b/imx8m/sp2_imx8mp/init.imx8mp.rc
+@@ -42,6 +42,9 @@ on property:sys.boot_completed=1
+     write /sys/class/gpio/gpio120/value 1
+     write /sys/class/gpio/gpio121/value 0
+     write /sys/class/gpio/gpio1/value 1
++    write /sys/class/gpio/export 501
++    write /sys/class/gpio/gpio501/direction "out"
++    write /sys/class/gpio/gpio501/value 1
+ 
+     chown mediacodec mediacodec /sys/class/remoteproc/remoteproc0/state
+     chmod 0660 /sys/class/remoteproc/remoteproc0/state
+@@ -71,6 +74,16 @@ on early-boot
+     export ISP_LOG_LEVEL 4
+     start isp_media_server
+ 
++on post-fs-data
++     start setup-sp2
++
++service setup_sp2 /vendor/bin/setup_sp2
++     class core
++     user root
++     group root
++     seclabel u:r:setup_sp2:s0
++     oneshot
++
+ on property:vendor.rw.camera.isp.control=0
+     stop isp_media_server
+ 
+diff --git a/imx8m/sp2_imx8mp/oob-reset.sh b/imx8m/sp2_imx8mp/oob-reset.sh
+old mode 100755
+new mode 100644
+index bef77378..4769fd62
+--- a/imx8m/sp2_imx8mp/oob-reset.sh
++++ b/imx8m/sp2_imx8mp/oob-reset.sh
+@@ -1,23 +1,24 @@
+ #!/system/bin/sh
+ 
+-sleep 5
++usage () {
++        echo "syntax: oob-reset.sh <duration> "
++}
+ 
+-echo "hello" > /data/local/tmp/file.test
++if [ "$1" = "-h" -o "$1" = '--help' ]; then
++        usage
++        exit 0
++fi
+ 
++time=${1:-1}       # duration
+ 
+ #check for root
+ BEROOT=""
+        if [ $(id -u) -ne 0 ];then
+            BEROOT=sudo
+        fi
+-
+        $BEROOT echo 501 > /sys/class/gpio/export
+        $BEROOT echo out > /sys/class/gpio/gpio501/direction
+-       $BEROOT echo 0 > /sys/class/gpio/gpio501/value
+-       $BEROOT echo 1 > /sys/class/gpio/gpio501/value
+-       $BEROOT echo 0 > /sys/class/gpio/gpio501/value
+-
+-       echo "exit" > /data/local/tmp/file1.test
+-
++       $BEROOT echo ${pin_val} > /sys/class/gpio/gpio501/value
++       sleep ${time} ;
++       $BEROOT echo 1  > /sys/class/gpio/gpio501/value
+        exit 0
+-
+diff --git a/imx8m/sp2_imx8mp/sepolicy/file_contexts b/imx8m/sp2_imx8mp/sepolicy/file_contexts
+index 39ff88ac..b2ed3846 100644
+--- a/imx8m/sp2_imx8mp/sepolicy/file_contexts
++++ b/imx8m/sp2_imx8mp/sepolicy/file_contexts
+@@ -38,3 +38,6 @@
+ /sys/devices/platform/soc@0/30800000.bus/30be0000.ethernet/net/eth0/wakeup[0-9]*(/.*)?                                                                u:object_r:sysfs_wakeup:s0
+ /sys/devices/platform/soc@0/33800000.pcie/pci0000:00/0000:00:00.0/0000:01:00.0/wakeup                                                                 u:object_r:sysfs_wakeup:s0
+ /sys/devices/platform/soc@0/33800000.pcie/pci0000:00/0000:00:00.0/0000:01:00.0/wakeup/wakeup[0-9]*(/.*)?                                              u:object_r:sysfs_wakeup:s0
++
++# adlink
++/vendor/bin/setup_sp2   u:object_r:setup_sp2_exec:s0
+diff --git a/imx8m/sp2_imx8mp/sepolicy/setup_sp2.te b/imx8m/sp2_imx8mp/sepolicy/setup_sp2.te
+new file mode 100644
+index 00000000..3bb41fbb
+--- /dev/null
++++ b/imx8m/sp2_imx8mp/sepolicy/setup_sp2.te
+@@ -0,0 +1,20 @@
++type setup_sp2, domain;
++type setup_sp2_exec, exec_type, vendor_file_type, file_type;
++
++init_daemon_domain(setup_sp2)
++
++# Let setup_sp2 execute binaries from /vendor
++allow setup_sp2 vendor_file:dir { open read search };
++allow setup_sp2 vendor_file:file { open read execute };
++
++# Allow directory search in /system (but NOT execute any system binaries)
++allow setup_sp2 system_file:dir { open read search };
++
++# Safe access to sysfs
++allow setup_sp2 sysfs:dir { read open search getattr };
++allow setup_sp2 sysfs:file { read open getattr write };
++allow setup_sp2 vendor_toolbox_exec:file { execute_no_trans };
++allow setup_sp2 tty_device:chr_file { open read write ioctl map getattr };
++allow setup_sp2 sysfs:dir { open read };
++allow setup_sp2 sysfs:file { open read };
++
+diff --git a/imx8m/sp2_imx8mp/sp2_imx8mp.mk b/imx8m/sp2_imx8mp/sp2_imx8mp.mk
+index 3b6b732f..6bef95ef 100644
+--- a/imx8m/sp2_imx8mp/sp2_imx8mp.mk
++++ b/imx8m/sp2_imx8mp/sp2_imx8mp.mk
+@@ -415,7 +415,9 @@ PRODUCT_COPY_FILES += \
+     $(IMX_DEVICE_PATH)/init.usb.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.nxp.usb.rc
+ 
+ PRODUCT_COPY_FILES += \
+-    $(IMX_DEVICE_PATH)/uart-mode.sh:/system/bin/uart-mode.sh
++    $(IMX_DEVICE_PATH)/uart-mode.sh:/system/bin/uart-mode.sh \
++    $(IMX_DEVICE_PATH)/oob-reset.sh:/system/bin/oob-reset.sh
++
+ 
+ PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
+     sys.usb.mtp.batchcancel=1
+@@ -660,7 +662,8 @@ PRODUCT_PACKAGES += \
+      cansend \
+      spidevtest \
+      eltt2 \
+-     beep
++     beep \
++     setup_sp2
+ 
+ # make sure /vendor/etc/configs/isp/ is created
+     PRODUCT_PACKAGES += hollow
+-- 
+2.34.1
+

@@ -81,7 +81,7 @@ export CLANG_PATH=/opt/prebuilt-android-clang
   $ chmod a+x ${HOME}/bin/repo
   $ export PATH=${PATH}:${HOME}/bin
   $ cd ${HOME}
-  $ git clone --branch SP2IMX8MP-93-P1500 https://github.com/ADLINK/imx8mp_android.git
+  $ git clone --branch SP2IMX8MP-91-A1033-23 https://github.com/ADLINK/imx8mp_android.git
   $ tar -zxvf imx-android-13.0.0_2.2.0.tar.gz
   $ source ${HOME}/imx-android-13.0.0_2.2.0/imx_android_setup.sh
 
@@ -93,6 +93,8 @@ export CLANG_PATH=/opt/prebuilt-android-clang
 cd ${HOME}/android_build/device/nxp/
 
 git am ${HOME}/imx8mp_android/patches/imx-android-13.0.0_2.2.0/android_build/device/nxp/0001-sp2-imx8mp-device-changes.patch
+
+git am ${HOME}/imx8mp_android/patches/imx-android-13.0.0_2.2.0/android_build/device/nxp/0002-sp2imx8mp-oob-serial-console-disable-CN-DO2.patch
 ```
 
 ### 2. Kernel
@@ -101,6 +103,9 @@ git am ${HOME}/imx8mp_android/patches/imx-android-13.0.0_2.2.0/android_build/dev
 cd ${HOME}/android_build/vendor/nxp-opensource/kernel_imx/
 
 git am ${HOME}/imx8mp_android/patches/imx-android-13.0.0_2.2.0/android_build/vendor/nxp-opensource/kernel_imx/0001-sp2-imx8mp-Add-Kernel-support.patch
+
+git am ${HOME}/imx8mp_android/patches/imx-android-13.0.0_2.2.0/android_build/vendor/nxp-opensource/kernel_imx/0002-sp2imx8mp-1sec-input-snvs-pwrkey-shutdown.patch
+
 ```
 
 ### 3. U-boot
@@ -109,6 +114,9 @@ git am ${HOME}/imx8mp_android/patches/imx-android-13.0.0_2.2.0/android_build/ven
 cd ${HOME}/android_build/vendor/nxp-opensource/uboot-imx/
 
 git am ${HOME}/imx8mp_android/patches/imx-android-13.0.0_2.2.0/android_build/vendor/nxp-opensource/uboot-imx/0001-sp2-imx8mp-Add-initial-board-support.patch
+
+git am ${HOME}/imx8mp_android/patches/imx-android-13.0.0_2.2.0/android_build/vendor/nxp-opensource/uboot-imx/0002-sp2-imx8mp-oob-disable-serial-console.patch
+
 ```
 
 ### 4. Build
@@ -116,7 +124,7 @@ git am ${HOME}/imx8mp_android/patches/imx-android-13.0.0_2.2.0/android_build/ven
 ```Shell
 cd ${HOME}/android_build/build/make/
 
-git am ${HOME}/imx8mp_android/patches/imx-android-13.0.0_2.2.0/android_build/build/make/0001-sp2-imx8mp-Build-Id-camera-app-SM.patch
+git am ${HOME}/imx8mp_android/patches/imx-android-13.0.0_2.2.0/android_build/build/make/0001-sp2-imx8mp-Build-Id-camera-app.patch
 ```
 
 ### 5. External Libraries
@@ -125,6 +133,8 @@ git am ${HOME}/imx8mp_android/patches/imx-android-13.0.0_2.2.0/android_build/bui
 cd ${HOME}/android_build/external/
 
 git apply ${HOME}/imx8mp_android/patches/imx-android-13.0.0_2.2.0/android_build/external/0001-external_can_spi_beep_eltt2_utils.patch
+
+git apply ${HOME}/imx8mp_android/patches/imx-android-13.0.0_2.2.0/android_build/external/0002-sp2imx8mp-external-enable-ttymxc1-binary.patch
 ```
 
 ### 6. imx-mkimage
@@ -138,13 +148,21 @@ git am ${HOME}/imx8mp_android/patches/imx-android-13.0.0_2.2.0/android_build/ven
 ### 7. Framework
 
 ```Shell
-cd ${HOME}/android_build/framework/av
+cd ${HOME}/android_build/frameworks/av
 
 git am ${HOME}/imx8mp_android/patches/imx-android-13.0.0_2.2.0/android_build/frameworks/av/0001-Adding-audio-gain-HDMI.patch
 
-cd ${HOME}/android_build/framework/base
+cd ${HOME}/android_build/frameworks/base
 
 git am ${HOME}/imx8mp_android/patches/imx-android-13.0.0_2.2.0/android_build/frameworks/base/0001-sp2-imx8mp-Remove-battery-icon.patch
+```
+
+### 8. arm-trusted-firmware
+
+```shell
+cd ${HOME}/android_build/vendor/nxp-opensource/arm-trusted-firmware/
+
+git am ${HOME}/imx8mp_android/patches/imx-android-13.0.0_2.2.0/android_build/vendor/nxp-opensource/arm-trusted-firmware/0001-sp2-imx8mp-oob-atf-disable-serial-console.patch
 ```
 
 ## To Compile the Android 13 BSP

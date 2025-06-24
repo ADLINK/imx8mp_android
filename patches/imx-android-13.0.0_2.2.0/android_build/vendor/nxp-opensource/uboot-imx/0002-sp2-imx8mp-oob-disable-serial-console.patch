@@ -1,0 +1,180 @@
+From 910f64eff0e375d9e2046a98b8ada076e42f21c2 Mon Sep 17 00:00:00 2001
+From: shiva-adlink <shivashankar.t@adlinktech.com>
+Date: Mon, 23 Jun 2025 12:37:48 +0530
+Subject: [PATCH 2/2] sp2-imx8mp: oob-disable-serial-console
+
+Signed-off-by: shiva-adlink <shivashankar.t@adlinktech.com>
+---
+ arch/arm/dts/sp2imx8mp.dts                               | 3 ++-
+ common/autoboot.c                                        | 4 ++++
+ configs/imx8mp_sp2_android_defconfig                     | 7 +++++--
+ configs/imx8mp_sp2_android_trusty_dual_defconfig         | 6 +++++-
+ ...mx8mp_sp2_android_trusty_secure_unlock_dual_defconfig | 6 +++++-
+ configs/imx8mp_sp2_android_uuu_defconfig                 | 6 +++++-
+ include/configs/imx8mp_evk_android.h                     | 1 +
+ include/configs/sp2imx8mp.h                              | 9 ++++++++-
+ 8 files changed, 35 insertions(+), 7 deletions(-)
+
+diff --git a/arch/arm/dts/sp2imx8mp.dts b/arch/arm/dts/sp2imx8mp.dts
+index 66ab9420887..71178caca3b 100644
+--- a/arch/arm/dts/sp2imx8mp.dts
++++ b/arch/arm/dts/sp2imx8mp.dts
+@@ -14,7 +14,8 @@
+ 	compatible = "fsl,imx8mp-evk", "fsl,imx8mp";
+ 
+ 	chosen {
+-		bootargs = "console=ttymxc1,115200 earlycon=ec_imx6q,0x30890000,115200";
++//		bootargs = "console=ttymxc1,115200 earlycon=ec_imx6q,0x30890000,115200";
++		bootargs = "console=ttynull";
+ 		stdout-path = &uart2;
+ 	};
+ 
+diff --git a/common/autoboot.c b/common/autoboot.c
+index 1752dd58483..a147f16b284 100644
+--- a/common/autoboot.c
++++ b/common/autoboot.c
+@@ -409,6 +409,10 @@ static int abortboot_single_key(int bootdelay)
+ 
+ 	putc('\n');
+ 
++#ifdef CONFIG_NO_UBOOT_TERMINAL
++#warning CONFIG_NO_UBOOT_TERMINAL is defined
++	abort=0;
++#endif
+ 	return abort;
+ }
+ 
+diff --git a/configs/imx8mp_sp2_android_defconfig b/configs/imx8mp_sp2_android_defconfig
+index 1c6b5af3dfd..55012fcb056 100644
+--- a/configs/imx8mp_sp2_android_defconfig
++++ b/configs/imx8mp_sp2_android_defconfig
+@@ -20,7 +20,7 @@ CONFIG_SPL_TEXT_BASE=0x920000
+ # CONFIG_USB_TCPC is not set
+ CONFIG_USB_XHCI_IMX8M=y
+ CONFIG_TARGET_IMX8MP_SP2=y
+-CONFIG_SPL_SERIAL=y
++CONFIG_SPL_SERIAL=n
+ CONFIG_SPL_DRIVERS_MISC=y
+ CONFIG_SPL_STACK=0x96dff0
+ CONFIG_SPL=y
+@@ -234,4 +234,7 @@ CONFIG_ANDROID_SUPPORT=y
+ CONFIG_ANDROID_AB_SUPPORT=y
+ CONFIG_DM_RNG=y
+ CONFIG_KASLR=y
+-
++CONFIG_SILENT_CONSOLE=y
++CONFIG_SYS_DEVICE_NULLDEV=y
++CONFIG_SILENT_CONSOLE_UNTIL_ENV=y
++CONFIG_SILENT_U_BOOT_ONLY=y
+diff --git a/configs/imx8mp_sp2_android_trusty_dual_defconfig b/configs/imx8mp_sp2_android_trusty_dual_defconfig
+index 0f47de742d6..2615a4c23f4 100644
+--- a/configs/imx8mp_sp2_android_trusty_dual_defconfig
++++ b/configs/imx8mp_sp2_android_trusty_dual_defconfig
+@@ -20,7 +20,7 @@ CONFIG_SPL_TEXT_BASE=0x920000
+ # CONFIG_USB_TCPC is not set
+ CONFIG_USB_XHCI_IMX8M=y
+ CONFIG_TARGET_IMX8MP_SP2=y
+-CONFIG_SPL_SERIAL=y
++CONFIG_SPL_SERIAL=n
+ CONFIG_SPL_DRIVERS_MISC=y
+ CONFIG_SPL_STACK=0x96dff0
+ CONFIG_SPL=y
+@@ -242,3 +242,7 @@ CONFIG_ATTESTATION_ID_DEVICE="evk_8mp"
+ CONFIG_ATTESTATION_ID_PRODUCT="evk_8mp"
+ CONFIG_ATTESTATION_ID_MANUFACTURER="nxp"
+ CONFIG_ATTESTATION_ID_MODEL="EVK_8MP"
++CONFIG_SILENT_CONSOLE=y
++CONFIG_SYS_DEVICE_NULLDEV=y
++CONFIG_SILENT_CONSOLE_UNTIL_ENV=y
++CONFIG_SILENT_U_BOOT_ONLY=y
+diff --git a/configs/imx8mp_sp2_android_trusty_secure_unlock_dual_defconfig b/configs/imx8mp_sp2_android_trusty_secure_unlock_dual_defconfig
+index 595f013391f..6677348e0a5 100644
+--- a/configs/imx8mp_sp2_android_trusty_secure_unlock_dual_defconfig
++++ b/configs/imx8mp_sp2_android_trusty_secure_unlock_dual_defconfig
+@@ -20,7 +20,7 @@ CONFIG_SPL_TEXT_BASE=0x920000
+ # CONFIG_USB_TCPC is not set
+ CONFIG_USB_XHCI_IMX8M=y
+ CONFIG_TARGET_IMX8MP_SP2=y
+-CONFIG_SPL_SERIAL=y
++CONFIG_SPL_SERIAL=n
+ CONFIG_SPL_DRIVERS_MISC=y
+ CONFIG_SPL_STACK=0x96dff0
+ CONFIG_SPL=y
+@@ -245,3 +245,7 @@ CONFIG_SECURE_UNLOCK=y
+ CONFIG_IMX_HAB=y
+ CONFIG_CMD_DEKBLOB=y
+ CONFIG_CMD_PRIBLOB=y
++CONFIG_SILENT_CONSOLE=y
++CONFIG_SYS_DEVICE_NULLDEV=y
++CONFIG_SILENT_CONSOLE_UNTIL_ENV=y
++CONFIG_SILENT_U_BOOT_ONLY=y
+diff --git a/configs/imx8mp_sp2_android_uuu_defconfig b/configs/imx8mp_sp2_android_uuu_defconfig
+index 9aef3a1dca6..7553405a9b8 100644
+--- a/configs/imx8mp_sp2_android_uuu_defconfig
++++ b/configs/imx8mp_sp2_android_uuu_defconfig
+@@ -19,7 +19,7 @@ CONFIG_DM_GPIO=y
+ CONFIG_SPL_TEXT_BASE=0x920000
+ CONFIG_USB_TCPC=n
+ CONFIG_TARGET_IMX8MP_SP2=y
+-CONFIG_SPL_SERIAL=y
++CONFIG_SPL_SERIAL=n
+ CONFIG_SPL_DRIVERS_MISC=y
+ CONFIG_SPL_STACK=0x96dff0
+ CONFIG_SPL=y
+@@ -225,3 +225,7 @@ CONFIG_FLASH_MCUFIRMWARE_SUPPORT=y
+ CONFIG_ANDROID_SUPPORT=y
+ CONFIG_ANDROID_AB_SUPPORT=y
+ CONFIG_CMD_BOOTA=n
++CONFIG_SILENT_CONSOLE=y
++CONFIG_SYS_DEVICE_NULLDEV=y
++CONFIG_SILENT_CONSOLE_UNTIL_ENV=y
++CONFIG_SILENT_U_BOOT_ONLY=y
+diff --git a/include/configs/imx8mp_evk_android.h b/include/configs/imx8mp_evk_android.h
+index dc4f13de5f4..c371b273919 100644
+--- a/include/configs/imx8mp_evk_android.h
++++ b/include/configs/imx8mp_evk_android.h
+@@ -15,6 +15,7 @@
+ #define CFG_EXTRA_ENV_SETTINGS		\
+ 	"splashpos=m,m\0"			\
+ 	"splashimage=0x50000000\0"		\
++	"silent=1\0"    \
+ 	"fdt_high=0xffffffffffffffff\0"		\
+ 	"initrd_high=0xffffffffffffffff\0"	\
+ 	"emmc_dev=2\0"\
+diff --git a/include/configs/sp2imx8mp.h b/include/configs/sp2imx8mp.h
+index d919bebb6de..37a8e88d9ae 100644
+--- a/include/configs/sp2imx8mp.h
++++ b/include/configs/sp2imx8mp.h
+@@ -19,7 +19,12 @@
+ #define PHY_ANEG_TIMEOUT 20000
+ 
+ #endif
+-
++/*
++#define CONFIG_DISABLE_CONSOLE 1
++#define CONFIG_SILENT_CONSOLE 1
++#define CONFIG_SYS_DEVICE_NULLDEV 1
++*/
++#define CONFIG_NO_UBOOT_TERMINAL
+ #ifdef CONFIG_DISTRO_DEFAULTS
+ #define BOOT_TARGET_DEVICES(func) \
+ 	func(USB, usb, 0) \
+@@ -71,6 +76,7 @@
+ 	"fdt_addr_r=0x43000000\0"			\
+ 	"fdt_addr=0x43000000\0"			\
+ 	"fdt_high=0xffffffffffffffff\0" \
++	"silent=1\0"    \
+ 	"mtdparts=" MFG_NAND_PARTITION "\0" \
+ 	"console=ttymxc1,115200 earlycon=ec_imx6q,0x30890000,115200\0" \
+ 	"bootargs=console=ttymxc1,115200 earlycon=ec_imx6q,0x30890000,115200 ubi.mtd=nandrootfs "  \
+@@ -98,6 +104,7 @@
+ 	"fdt_addr=0x43000000\0"			\
+ 	"boot_fdt=try\0" \
+ 	"fdt_high=0xffffffffffffffff\0"		\
++	"silent=1\0"    \
+ 	"boot_fit=no\0" \
+ 	"fdtfile=" CONFIG_DEFAULT_FDT_FILE "\0" \
+ 	"bootm_size=0x10000000\0" \
+-- 
+2.34.1
+
