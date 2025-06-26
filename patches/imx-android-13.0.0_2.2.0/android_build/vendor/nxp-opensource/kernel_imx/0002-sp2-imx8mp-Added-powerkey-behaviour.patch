@@ -1,0 +1,172 @@
+From 5049e6ef2451416029ad602be77b13b9754a2ac0 Mon Sep 17 00:00:00 2001
+From: shiva-adlink <shivashankar.t@adlinktech.com>
+Date: Thu, 26 Jun 2025 10:56:46 +0530
+Subject: [PATCH 2/2] sp2-imx8mp: Added-powerkey-behaviour
+
+Signed-off-by: shiva-adlink <shivashankar.t@adlinktech.com>
+---
+ drivers/input/keyboard/snvs_pwrkey.c | 122 ++++++++++++++++++---------
+ 1 file changed, 81 insertions(+), 41 deletions(-)
+
+diff --git a/drivers/input/keyboard/snvs_pwrkey.c b/drivers/input/keyboard/snvs_pwrkey.c
+index 0e60b8cb0c37..99cddce6fc49 100644
+--- a/drivers/input/keyboard/snvs_pwrkey.c
++++ b/drivers/input/keyboard/snvs_pwrkey.c
+@@ -66,48 +66,77 @@ struct pwrkey_drv_data {
+ 	struct input_dev *input;
+ 	bool  emulate_press;
+ 	struct device *trusty_dev;
++	unsigned long press_start_jiffies;
++	bool long_press_reported;
++	struct timer_list shutdown_timer;
++	bool shutdown_timer_scheduled;
+ };
+ 
+ static void imx_imx_snvs_check_for_events(struct timer_list *t)
+ {
+-	struct pwrkey_drv_data *pdata = from_timer(pdata, t, check_timer);
+-	struct input_dev *input = pdata->input;
+-	u32 state;
+-
+-	if (pdata->clk) {
+-		if (pdata->suspended)
+-			clk_prepare_enable(pdata->clk);
+-		else
+-			clk_enable(pdata->clk);
+-	}
+-
+-	if (pdata->trusty_dev)
+-		state = trusty_snvs_read(pdata->trusty_dev, SNVS_HPSR_REG);
+-	else
+-		regmap_read(pdata->snvs, SNVS_HPSR_REG, &state);
+-
+-	if (pdata->clk) {
+-		if (pdata->suspended)
+-			clk_disable_unprepare(pdata->clk);
+-		else
+-			clk_disable(pdata->clk);
+-	}
+-
+-	state = state & SNVS_HPSR_BTN ? 1 : 0;
+-
+-	/* only report new event if status changed */
+-	if (state ^ pdata->keystate) {
+-		pdata->keystate = state;
+-		input_event(input, EV_KEY, pdata->keycode, state);
+-		input_sync(input);
+-		pm_relax(pdata->input->dev.parent);
+-	}
+-
+-	/* repeat check if pressed long */
+-	if (state) {
+-		mod_timer(&pdata->check_timer,
+-			  jiffies + msecs_to_jiffies(REPEAT_INTERVAL));
+-	}
++        struct pwrkey_drv_data *pdata = from_timer(pdata, t, check_timer);
++        struct input_dev *input = pdata->input;
++        u32 state;
++        unsigned long now = jiffies;
++
++
++        if (pdata->clk) {
++                if (pdata->suspended)
++                        clk_prepare_enable(pdata->clk);
++                else
++                        clk_enable(pdata->clk);
++        }
++
++        if (pdata->trusty_dev)
++                state = trusty_snvs_read(pdata->trusty_dev, SNVS_HPSR_REG);
++        else
++                regmap_read(pdata->snvs, SNVS_HPSR_REG, &state);
++
++        if (pdata->clk) {
++                if (pdata->suspended)
++                        clk_disable_unprepare(pdata->clk);
++                else
++                        clk_disable(pdata->clk);
++        }
++
++        state = state & SNVS_HPSR_BTN ? 1 : 0;
++
++        /* only report new event if status changed */
++        if (state ^ pdata->keystate) {
++                pdata->keystate = state;
++                input_event(input, EV_KEY, pdata->keycode, state);
++                input_sync(input);
++                pm_relax(pdata->input->dev.parent);
++
++                if (state) {
++                        pdata->press_start_jiffies = now;
++                        pdata->long_press_reported = false;
++                } else {
++                        pdata->long_press_reported = false;
++                }
++        }
++
++        /* check for 1 second press */
++        if (state) {
++		if (!pdata->long_press_reported &&
++                    time_after_eq(now, pdata->press_start_jiffies + msecs_to_jiffies(1000))) {
++                        pr_info("Power key pressed for 1 second!\n");
++                        pdata->long_press_reported = true;
++			if (!pdata->shutdown_timer_scheduled) {
++				mod_timer(&pdata->shutdown_timer, jiffies + msecs_to_jiffies(9000));
++				pdata->shutdown_timer_scheduled = true;
++				pr_info("shutdown_timer_status : %s\n", pdata->shutdown_timer_scheduled ? "true" : "false");
++			}
++			else{
++				del_timer_sync(&pdata->shutdown_timer);
++				pdata->shutdown_timer_scheduled = false;
++				pr_info("shutdown_timer_status : %s\n", pdata->shutdown_timer_scheduled ? "true" : "false");
++			}
++                }
++                /* repeat check */
++                mod_timer(&pdata->check_timer,
++                          now + msecs_to_jiffies(REPEAT_INTERVAL));
++        }
+ }
+ 
+ static irqreturn_t imx_snvs_pwrkey_interrupt(int irq, void *dev_id)
+@@ -167,6 +196,15 @@ static irqreturn_t imx_snvs_pwrkey_interrupt(int irq, void *dev_id)
+ 	return IRQ_HANDLED;
+ }
+ 
++static void shutdown_timer_fn(struct timer_list *t)
++{
++    struct pwrkey_drv_data *pdata = from_timer(pdata, t, shutdown_timer);
++    pr_info("10-second delay done: Triggering shutdown\n");
++
++    regmap_update_bits(pdata->snvs, SNVS_LPCR_REG, BIT(5), BIT(5));
++    regmap_update_bits(pdata->snvs, SNVS_LPCR_REG, BIT(6), BIT(6));
++}
++
+ static void imx_snvs_pwrkey_disable_clk(void *data)
+ {
+ 	clk_disable_unprepare(data);
+@@ -277,9 +315,9 @@ static int imx_snvs_pwrkey_probe(struct platform_device *pdev)
+ 
+ 	if (pdata->trusty_dev != NULL)
+ 		trusty_snvs_update_lpcr(pdata->trusty_dev, SNVS_LPCR_DEP_EN, 1);
+-	else
++	else{
+ 		regmap_update_bits(pdata->snvs, SNVS_LPCR_REG, SNVS_LPCR_DEP_EN, SNVS_LPCR_DEP_EN);
+-
++	}
+ 	/* clear the unexpected interrupt before driver ready */
+ 	if (pdata->trusty_dev != NULL)
+ 		trusty_snvs_write(pdata->trusty_dev, SNVS_LPSR_REG, SNVS_LPSR_SPO);
+@@ -287,7 +325,9 @@ static int imx_snvs_pwrkey_probe(struct platform_device *pdev)
+ 		regmap_write(pdata->snvs, SNVS_LPSR_REG, SNVS_LPSR_SPO);
+ 
+ 	timer_setup(&pdata->check_timer, imx_imx_snvs_check_for_events, 0);
+-
++	timer_setup(&pdata->shutdown_timer, shutdown_timer_fn, 0);
++	pdata->shutdown_timer_scheduled = false;
++	pr_info("shutdown_timer_started? - %d\n",pdata->shutdown_timer_scheduled);
+ 	input = devm_input_allocate_device(&pdev->dev);
+ 	if (!input) {
+ 		dev_err(&pdev->dev, "failed to allocate the input device\n");
+-- 
+2.34.1
+
