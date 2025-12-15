@@ -122,16 +122,7 @@
 
 ### 5.2 Micro USB (Device mode)
 
- * Connect micro USB cable to access device in client mode.
- * Devices can be accessed using adb commands.
-
- #### Running adb
- * After Board boots up, connect the micro USB port on the ADLINK board with the Host system using a Micro USB cable.
- * On a Ubuntu machine, install adb using below commands.
-   ```
-   $ sudo adb usb
-   $ sudo adb shell ls <to list the current directory on the Android board>
-    ```
+ * Not supported due to Hardware Limitation.
 
 ### 5.3 HDMI
 
