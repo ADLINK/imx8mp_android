@@ -80,6 +80,7 @@ $ source ${HOME}/imx-android-15.0.0_1.0.0/imx_android_setup.sh
 $ cd ${HOME}/android_build/device/nxp
 $ git am ${HOME}/imx8mp_android/patches/imx-android-15.0.0_1.0.0/android_build/lec-imx8mp/device/nxp/0001-lec-imx8mp-Add-device-support.patch
 $ git am ${HOME}/imx8mp_android/patches/imx-android-15.0.0_1.0.0/android_build/lec-imx8mp/device/nxp/0002-SDCard_automount_tlv320_support.patch
+$ git am ${HOME}/imx8mp_android/patches/imx-android-15.0.0_1.0.0/android_build/lec-imx8mp/device/nxp/0003-Added-tlv320_config.patch
 ```
 
 ### 2. Kernel
