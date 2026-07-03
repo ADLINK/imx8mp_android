@@ -1,0 +1,105 @@
+From b5e526b776120642f6f4e3d45cc26d602d78dbcb Mon Sep 17 00:00:00 2001
+From: shiva-adlink <shivashankar.t@adlinktech.com>
+Date: Wed, 1 Jul 2026 18:10:08 +0530
+Subject: [PATCH 2/2] lec-imx8mp-uboot-detect-i2c-tlv320
+
+Signed-off-by: shiva-adlink <shivashankar.t@adlinktech.com>
+---
+ drivers/fastboot/fb_fsl/fb_fsl_boot.c | 65 ++++++++++++++++++++++++++-
+ 1 file changed, 64 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/fastboot/fb_fsl/fb_fsl_boot.c b/drivers/fastboot/fb_fsl/fb_fsl_boot.c
+index 7115864d383..1e15450114b 100644
+--- a/drivers/fastboot/fb_fsl/fb_fsl_boot.c
++++ b/drivers/fastboot/fb_fsl/fb_fsl_boot.c
+@@ -20,6 +20,8 @@
+ #include <env.h>
+ #include <u-boot/lz4.h>
+ #include <linux/delay.h>
++#include <i2c.h>
++#include <dm.h>
+ #include "../lib/avb/fsl/utils.h"
+ 
+ #ifdef CONFIG_AVB_SUPPORT
+@@ -227,6 +229,49 @@ U_BOOT_CMD(
+ 
+ /* Section for Android bootimage format support */
+ 
++/* TLV320AIC3x audio codec i2c address on i2c2 */
++#define TLV320_I2C_BUS_SEQ	1
++#define TLV320_I2C_ADDR		0x18
++
++/* dtbo.img dt_table_entry indices for the "imx8mp" platform, packed
++ * by device/nxp/common/build/dtbo.mk from BoardConfig.mk's
++ * TARGET_BOARD_DTS_CONFIG += imx8mp:lec-imx8mp.dtb:lec-imx8mp-tlv320.dtb
++ * entry[0] = lec-imx8mp.dtb        (default / wm8960 codec)
++ * entry[1] = lec-imx8mp-tlv320.dtb (tlv320 codec)
++ */
++#define DTBO_ENTRY_DEFAULT	0
++#define DTBO_ENTRY_TLV320	1
++
++/*
++ * Probe for the TLV320AIC3x codec on i2c2. Returns true if detected,
++ * false otherwise. Used to select which dt_table_entry to load from
++ * the "dtbo" partition in do_boota().
++ */
++static bool check_tlv320_codec_present(void)
++{
++	struct udevice *bus;
++	struct udevice *dev;
++	int ret;
++
++	ret = uclass_get_device_by_seq(UCLASS_I2C, TLV320_I2C_BUS_SEQ, &bus);
++	if (ret) {
++		printf("boota: i2c bus %d not found (%d), skip tlv320 probe\n",
++		       TLV320_I2C_BUS_SEQ, ret);
++		return false;
++	}
++
++	ret = dm_i2c_probe(bus, TLV320_I2C_ADDR, 0, &dev);
++	if (!ret) {
++		printf("boota: tlv320 codec detected on i2c%d@0x%02x\n",
++		       TLV320_I2C_BUS_SEQ, TLV320_I2C_ADDR);
++		return true;
++	}
++
++	printf("boota: tlv320 codec not present on i2c%d@0x%02x (%d)\n",
++	       TLV320_I2C_BUS_SEQ, TLV320_I2C_ADDR, ret);
++	return false;
++}
++
+ #if !defined(CONFIG_ANDROID_DYNAMIC_PARTITION) && defined(CONFIG_SYSTEM_RAMDISK_SUPPORT)
+ /* Setup booargs for taking the system parition as ramdisk */
+ static void fastboot_setup_system_boot_args(const char *slot, bool append_root)
+@@ -977,9 +1022,27 @@ int do_boota(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[]) {
+ 		goto fail;
+ 	}
+ 
++	/* Select which dtbo entry to boot: entry 1 (tlv320 codec dtb)
++	 * if the tlv320 codec is detected on i2c2, otherwise fall back
++	 * to entry 0 (default/wm8960 dtb).
++	 */
++	uint32_t dt_entry_count = be32_to_cpu(dt_img->dt_entry_count);
++	uint32_t dt_entry_size = be32_to_cpu(dt_img->dt_entry_size);
++	int dtbo_index = check_tlv320_codec_present() ?
++			  DTBO_ENTRY_TLV320 : DTBO_ENTRY_DEFAULT;
++
++	if ((uint32_t)dtbo_index >= dt_entry_count) {
++		printf("boota: dtbo index %d out of range (count=%d), using entry %d\n",
++				dtbo_index, dt_entry_count, DTBO_ENTRY_DEFAULT);
++		dtbo_index = DTBO_ENTRY_DEFAULT;
++	}
++
++	printf("boota: loading dtbo entry[%d] of %d\n", dtbo_index, dt_entry_count);
++
+ 	struct dt_table_entry *dt_entry;
+ 	dt_entry = (struct dt_table_entry *)((ulong)dt_img +
+-			be32_to_cpu(dt_img->dt_entries_offset));
++			be32_to_cpu(dt_img->dt_entries_offset) +
++			dtbo_index * dt_entry_size);
+ 	fdt_size = be32_to_cpu(dt_entry->dt_size);
+ 	memcpy((void *)(ulong)fdt_addr, (void *)((ulong)dt_img +
+ 			be32_to_cpu(dt_entry->dt_offset)), fdt_size);
+-- 
+2.50.1
+

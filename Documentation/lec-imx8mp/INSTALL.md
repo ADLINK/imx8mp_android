@@ -81,6 +81,7 @@ $ cd ${HOME}/android_build/device/nxp
 $ git am ${HOME}/imx8mp_android/patches/imx-android-15.0.0_1.0.0/android_build/lec-imx8mp/device/nxp/0001-lec-imx8mp-Add-device-support.patch
 $ git am ${HOME}/imx8mp_android/patches/imx-android-15.0.0_1.0.0/android_build/lec-imx8mp/device/nxp/0002-SDCard_automount_tlv320_support.patch
 $ git am ${HOME}/imx8mp_android/patches/imx-android-15.0.0_1.0.0/android_build/lec-imx8mp/device/nxp/0003-Added-tlv320_config.patch
+$ git am ${HOME}/imx8mp_android/patches/imx-android-15.0.0_1.0.0/android_build/lec-imx8mp/device/nxp/0004-lec-imx8mp-Device-changes-unified-codec-support.patch
 ```
 
 ### 2. Kernel
@@ -94,6 +95,7 @@ $ git am ${HOME}/imx8mp_android/patches/imx-android-15.0.0_1.0.0/android_build/l
 ```
 $ cd ${HOME}/android_build/vendor/nxp-opensource/uboot-imx
 $ git am ${HOME}/imx8mp_android/patches/imx-android-15.0.0_1.0.0/android_build/lec-imx8mp/vendor/nxp-opensource/uboot-imx/0001-lec-imx8mp-Add-initial-board-support.patch
+$ git am ${HOME}/imx8mp_android/patches/imx-android-15.0.0_1.0.0/android_build/lec-imx8mp/vendor/nxp-opensource/uboot-imx/0002-lec-imx8mp-uboot-detect-i2c-tlv320.patch
 ```
 
 ### 4. imx-mkimage

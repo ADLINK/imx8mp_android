@@ -1,0 +1,58 @@
+From 229404b298dc0fb9091422d9be74fefbc66fe547 Mon Sep 17 00:00:00 2001
+From: shiva-adlink <shivashankar.t@adlinktech.com>
+Date: Fri, 3 Jul 2026 13:54:23 +0530
+Subject: [PATCH 4/4] lec-imx8mp-Device-changes-unified-codec-support
+
+Signed-off-by: shiva-adlink <shivashankar.t@adlinktech.com>
+---
+ common/build/dtbo.mk            | 12 ++++++++++--
+ imx8m/lec_imx8mp/BoardConfig.mk |  2 +-
+ 2 files changed, 11 insertions(+), 3 deletions(-)
+
+diff --git a/common/build/dtbo.mk b/common/build/dtbo.mk
+index 653dad5e..fcab034c 100644
+--- a/common/build/dtbo.mk
++++ b/common/build/dtbo.mk
+@@ -32,7 +32,9 @@ DTB_OUT_PATH := $(KERNEL_OUT)/arch/$(TARGET_KERNEL_ARCH)/boot/dts/$(DTS_ADDITION
+ 
+ TARGET_DTB :=
+ $(foreach dts_config,$(TARGET_BOARD_DTS_CONFIG), \
+-	$(eval TARGET_DTB += $(addprefix $(DTB_OUT_PATH),$(shell echo ${dts_config} | cut -d':' -f2))))
++	$(eval TARGET_DTB += $(addprefix $(DTB_OUT_PATH),$(shell echo ${dts_config} | cut -d':' -f2))) \
++	$(eval TARGET_DTB += $(addprefix $(DTB_OUT_PATH),$(shell echo ${dts_config} | cut -d':' -f3))))
++
+ 
+ $(BOARD_PREBUILT_DTBOIMAGE): $(KERNEL_BIN) $(TARGET_DTB) | $(MKDTIMG) $(AVBTOOL)
+ 	$(hide) echo "Building $(KERNEL_ARCH) dtbo ..."
+@@ -40,8 +42,14 @@ $(BOARD_PREBUILT_DTBOIMAGE): $(KERNEL_BIN) $(TARGET_DTB) | $(MKDTIMG) $(AVBTOOL)
+ 		DTS_PLATFORM=`echo $$dtsplat | cut -d':' -f1`; \
+ 		DTB_NAME=`echo $$dtsplat | cut -d':' -f2`; \
+ 		DTB=`echo $(KERNEL_OUT)/arch/$(TARGET_KERNEL_ARCH)/boot/dts/$(DTS_ADDITIONAL_PATH)/$${DTB_NAME}`; \
++		DTB_EXTRA_NAME=`echo $$dtsplat | cut -d':' -f3`; \
+ 		DTBO_IMG=`echo $(PRODUCT_OUT)/dtbo-$${DTS_PLATFORM}.img`; \
+-		$(MKDTIMG) create $$DTBO_IMG $$DTB; \
++		if [ -n "$$DTB_EXTRA_NAME" ]; then \
++			DTB_EXTRA=`echo $(KERNEL_OUT)/arch/$(TARGET_KERNEL_ARCH)/boot/dts/$(DTS_ADDITIONAL_PATH)/$${DTB_EXTRA_NAME}`; \
++			$(MKDTIMG) create $$DTBO_IMG $$DTB $$DTB_EXTRA; \
++		else \
++			$(MKDTIMG) create $$DTBO_IMG $$DTB; \
++		fi; \
+ 		$(AVBTOOL) add_hash_footer --image $$DTBO_IMG  \
+ 			--partition_name dtbo \
+ 			--partition_size $(BOARD_DTBOIMG_PARTITION_SIZE); \
+diff --git a/imx8m/lec_imx8mp/BoardConfig.mk b/imx8m/lec_imx8mp/BoardConfig.mk
+index 6207c271..4af05e7e 100644
+--- a/imx8m/lec_imx8mp/BoardConfig.mk
++++ b/imx8m/lec_imx8mp/BoardConfig.mk
+@@ -168,7 +168,7 @@ ifeq ($(TARGET_USE_DYNAMIC_PARTITIONS),true)
+     TARGET_BOARD_DTS_CONFIG := imx8mp:imx8mp-evk-no-product.dtb
+   else
+     # Default dual os08a20
+-    TARGET_BOARD_DTS_CONFIG := imx8mp:lec-imx8mp.dtb
++    TARGET_BOARD_DTS_CONFIG := imx8mp:lec-imx8mp.dtb:lec-imx8mp-tlv320.dtb
+     # os08a20 + ov5640
+     TARGET_BOARD_DTS_CONFIG += imx8mp-os08a20-ov5640:imx8mp-evk-os08a20-ov5640.dtb
+     # Only os08a20
+-- 
+2.50.1
+
